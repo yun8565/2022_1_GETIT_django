@@ -8,7 +8,7 @@ class TestView(TestCase):
         
     def navbar_test(self, soup):
         navbar = soup.nav
-        self.assertIn('Blog', navbar.text)
+        self.assertIn('BLOG', navbar.text)
         self.assertIn('About Me', navbar.text)
         
         logo_btn = navbar.find('a', text='Do It Django')
