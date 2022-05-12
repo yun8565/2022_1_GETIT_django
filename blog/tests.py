@@ -8,20 +8,20 @@ class TestView(TestCase):
         
     def navbar_test(self, soup):
         navbar = soup.nav
-        self.assertIn('BLOG', navbar.text)
+        self.assertIn('Blog', navbar.text)
         self.assertIn('About Me', navbar.text)
         
         logo_btn = navbar.find('a', text='Do It Django')
-        self.assertEqual(logo_btn.attrs['href'], '/')
+        self.assertEqual(logo_btn.attrs['href'], "/")
         
         home_btn = navbar.find('a', text='Home')
-        self.assertEqual(home_btn.attrs['href'], '/')
+        self.assertEqual(home_btn.attrs['href'], "/")
         
         blog_btn = navbar.find('a', text='Blog')
-        self.assertEqual(blog_btn.attrs['href'], '/blog/')
+        self.assertEqual(blog_btn.attrs['href'], "/blog/")
         
         about_me_btn = navbar.find('a', text='About Me')
-        self.assertEqual(about_me_btn.attrs['href'], '/about_me/')
+        self.assertEqual(about_me_btn.attrs['href'], "/about_me/")
     
     def test_post_list(self):
         #1. 포스트 목록 페이지
@@ -30,7 +30,7 @@ class TestView(TestCase):
         self.assertEqual(response.status_code, 200)
         #3. 페이지 타이틀 'Blog'
         soup = BeautifulSoup(response.content, 'html.parser')
-        self.assertEqual(soup.title.text, 'Blog List')
+        self.assertEqual(soup.title.text, 'Blog')
         #4. 내비게이션 바 존재한다.
         #5. Blog, About Me 라는 문구가 내비게이션 바에 있다.
         self.navbar_test(soup)
