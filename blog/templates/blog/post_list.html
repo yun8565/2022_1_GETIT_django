@@ -1,8 +1,8 @@
 {% extends 'blog/base.html' %}
 
 {% block main_area %}
-    <h1>Blog</h1>
-                {% if post_list %}
+    <h1>Blog {% if category %} <span class="badge bg-secondary">{{category}}</span>{% endif %}</h1>
+                {% if post_list.exists %}
                 <!--Blog Post-->
                 {% for p in post_list %}
                 <div class="card mb-4" id="post-{{p.pk}}" >
@@ -18,7 +18,7 @@
                         {% else %}
                         <span class="badge badge-secondary float-right">미분류</span>
                         {% endif %}
-                        
+
                         <h2 class="card-title h4">{{ p.title }}</h2>
                         {% if p.hook_text %}
                             <h5 class="text_muted">{{ p.hook_text }}</h5>

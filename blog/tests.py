@@ -11,12 +11,12 @@ class TestView(TestCase):
 
         self.post_001 = Post.objects.create(
             title='첫 번째 포스트입니다.',
-            content = 'Hello World. We are the world.',
+            content = '카테고리가 없어요.. 미분류입니다',
             author=self.user_lee,
         )
         self.post_002 = Post.objects.create(
             title='두 번째 포스트입니다.',
-            content = '카테고리가 없습니다.....',
+            content = '카테고리가 있어요',
             author=self.user_lee,
             category=self.category_music,
         )
@@ -108,5 +108,18 @@ class TestView(TestCase):
         #7. 첫 번째 포스트의 내용(content)이 포스트 영역에 있다.
         self.assertIn(self.user_lee.username.upper(),post_area.text)
         self.assertIn(self.post_002.content, post_area.text)
+
+    def test_category_page(self):
+        response = self.client.get(self.category_music.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.navbar_test(soup)
+        self.category_card_test(soup)
+
+        self.assertIn(self.category_music.name, soup.h1.text)
+        main_area = soup.find('div', id="main_area")
+        self.assertIn(self.category_music.name, main_area.text)
+        self.assertIn(self.post_002.title, main_area.text)
+        self.assertNotIn(self.post_001.title, main_area.text)
 
         
