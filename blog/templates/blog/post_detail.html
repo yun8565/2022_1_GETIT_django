@@ -11,6 +11,11 @@
         <article>
             <!-- Post header-->
             <header class="mb-4">
+                {% if post.category %}
+                <span class = "badge badge-secondary float-right">{{post.category}}</span>
+                {% else %}
+                <span class="badge badge-secondary float-right">미분류</span>
+                {% endif %}
                 <!-- Post title-->
                 <h1 class="fw-bolder mb-1">{{ post.title }}</h1>
                 <h5 class="text-muted">{{ post.hook_text }}</h5>
@@ -20,8 +25,6 @@
                 <hr>
                 <p>{{ post.created_at }}</p>
                 <hr>
-                <a class="badge bg-secondary text-decoration-none link-light" href="#!">Web Design</a>
-                <a class="badge bg-secondary text-decoration-none link-light" href="#!">Freebies</a>
             </header>
             <!-- Preview image figure-->
             {% if post.head_image %}
