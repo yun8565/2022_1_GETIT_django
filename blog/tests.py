@@ -1,25 +1,44 @@
+from re import S
 from django.test import TestCase, Client
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
-from .models import Post, Category
+from .models import Post, Category, Tag
 
 class TestView(TestCase):
     def setUp(self):
         self.client = Client()
+        
         self.user_lee = User.objects.create_user(username="lee", password="lee123456")
+        
         self.category_music = Category.objects.create(name="음악", slug="음악")
+        
+        self.tag_python = Tag.objects.create(name="파이썬", slug="파이썬")
+        self.tag_java = Tag.objects.create(name="자바", slug="자바")
+        self.tag_js = Tag.objects.create(name="자바스크립트", slug="자바스크립트")
 
         self.post_001 = Post.objects.create(
             title='첫 번째 포스트입니다.',
             content = '카테고리가 없어요.. 미분류입니다',
             author=self.user_lee,
         )
+        self.post_001.tags.add(self.tag_python)
+
         self.post_002 = Post.objects.create(
             title='두 번째 포스트입니다.',
             content = '카테고리가 있어요',
             author=self.user_lee,
             category=self.category_music,
         )
+
+        self.post_003 = Post.objects.create(
+            title='세 번째 포스트입니다.',
+            content = '태그가 많아요',
+            author=self.user_lee,
+            category=self.category_music
+        )
+        self.post_003.tags.add(self.tag_java)
+        self.post_003.tags.add(self.tag_js)
+
 
     def category_card_test(self,soup):
         categories_card = soup.find('div', id='categories_card')
@@ -48,7 +67,7 @@ class TestView(TestCase):
         self.assertEqual(about_me_btn.attrs['href'], "/about_me/")
     
     def test_post_list(self):
-        self.assertEqual(Post.objects.count(),2)
+        self.assertEqual(Post.objects.count(),3)
     
         response = self.client.get('/blog/')
     
@@ -66,13 +85,28 @@ class TestView(TestCase):
         post_001_card = main_area.find('div', id='post-1')
         self.assertIn('미분류', post_001_card.text)
         self.assertIn(self.post_001.title, post_001_card.text)
+        self.assertIn(self.user_lee.username.upper(), post_001_card.text)
+        self.assertIn(self.tag_python.name, post_001_card.text)
+        self.assertNotIn(self.tag_java.name, post_001_card.text)
+        self.assertNotIn(self.tag_js.name, post_001_card.text)
 
         post_002_card=main_area.find('div', id="post-2")
         self.assertIn(self.post_002.title, post_002_card.text)
         self.assertIn(self.post_002.category.name, post_002_card.text)
+        self.assertIn(self.user_lee.username.upper(), post_002_card.text)
+        self.assertNotIn(self.tag_java.name, post_002_card.text)
+        self.assertNotIn(self.tag_js.name, post_002_card.text)
+        self.assertNotIn(self.tag_python.name, post_002_card.text)
 
-        self.assertIn(self.user_lee.username.upper(), main_area.text)
-        
+
+        post_003_card=main_area.find('div', id="post-3")
+        self.assertIn(self.post_003.title, post_003_card.text)
+        self.assertIn(self.post_003.category.name, post_003_card.text)
+        self.assertIn(self.user_lee.username.upper(), post_003_card.text)
+        self.assertIn(self.tag_java.name, post_003_card.text)
+        self.assertIn(self.tag_js.name, post_003_card.text)
+        self.assertNotIn(self.tag_python.name, post_003_card.text)
+
         Post.objects.all().delete()
         self.assertEqual(Post.objects.count(),0)
         response = self.client.get('/blog/')
@@ -81,33 +115,28 @@ class TestView(TestCase):
         #self.assertNotIn('아직 게시물이 없습니다', main_area.text)
         
     def test_post_detail(self):
-        #1.포스트가 하나 있다
+        self.assertEqual(self.post_003.get_absolute_url(), '/blog/3/')
         
-        self.assertEqual(self.post_002.get_absolute_url(), '/blog/2/')
-        
-        #1. 첫 번째 포스트의 상세 페이지 테스트
-        #2. 첫 번째 포스트의 url 로 접근하면 정상적으로 작동한다. (status code : 200)
-        response= self.client.get(self.post_002.get_absolute_url())
+        response= self.client.get(self.post_003.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        #3. 포스트 목록 페이지와 똑같은 네비게이션 바가 있다.
         self.navbar_test(soup)
         self.category_card_test(soup)
-        #4. 첫 번째 포스트의 제목이 웹 브라우저 타이틀에 들어있다.
-        self.assertIn(self.post_002.title, soup.title.text)
+    
+        self.assertIn(self.post_003.title, soup.title.text)
         
-        #5. 첫 번째 포스트의 제목이 포스트 영역에 있다.
         main_area = soup.find('div', id='main_area')
         post_area = main_area.find('div', id='post_area')
-        self.assertIn(self.post_002.title, post_area.text)
+        self.assertIn(self.post_003.title, post_area.text)
         self.assertIn(self.category_music.name, post_area.text)
-        #6. 첫 번째 포스트의 작성자(author)가 포스트 영역에 있다 (아직 구현할 수 없음)
-        #아직 작성 불가
         
-        #7. 첫 번째 포스트의 내용(content)이 포스트 영역에 있다.
         self.assertIn(self.user_lee.username.upper(),post_area.text)
-        self.assertIn(self.post_002.content, post_area.text)
+        self.assertIn(self.post_003.content, post_area.text)
+
+        self.assertNotIn(self.tag_python.name, post_area.text)
+        self.assertIn(self.tag_java.name, post_area.text)
+        self.assertIn(self.tag_js.name, post_area.text)
 
     def test_category_page(self):
         response = self.client.get(self.category_music.get_absolute_url())
