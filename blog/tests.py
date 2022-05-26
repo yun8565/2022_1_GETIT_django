@@ -5,7 +5,7 @@ from urllib import response
 from django.test import TestCase, Client
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
-from .models import Post, Category, Tag
+from .models import Post, Category, Tag, Comment
 
 class TestView(TestCase):
     def setUp(self):
@@ -45,6 +45,12 @@ class TestView(TestCase):
         )
         self.post_003.tags.add(self.tag_java)
         self.post_003.tags.add(self.tag_js)
+
+        self.comment_001 = Comment.objects.create(
+            post=self.post_001,
+            author=self.user_lee,
+            content="첫 번째 댓글입니다."
+        )
 
 
     def category_card_test(self,soup):
@@ -144,6 +150,11 @@ class TestView(TestCase):
         self.assertNotIn(self.tag_python.name, post_area.text)
         self.assertIn(self.tag_java.name, post_area.text)
         self.assertIn(self.tag_js.name, post_area.text)
+
+        comments_area = soup.find('div', id='comment_area')
+        comment_001_area = comments_area.find('div', id='comment-1')
+        self.assertIn(self.comment_001.author.username, comment_001_area.text)
+        self.assertIn(self.comment_001.content, comment_001_area.text)
 
     def test_category_page(self):
         response = self.client.get(self.category_music.get_absolute_url())
