@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     {% load static %}
+    {% load socialaccount %}
 <head>
     <title>{% block head_title %}Blog{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'blog/bootstrap.min.css' %}" media="screen">
@@ -28,7 +29,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/about_me/">About Me</a>
                     </li>
-                    <li class="nav-item dropdown">
+                    <!-- <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Dropdown link
@@ -38,15 +39,26 @@
                             <li><a class="dropdown-item" href="#">Another action</a></li>
                             <li><a class="dropdown-item" href="#">Something else here</a></li>
                         </ul>
-                    </li>
+                    </li> -->
                 </ul>
 
             </div>
             <ul class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        {{user.username}}
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <li><a class="dropdown-item" href="/accounts/logout">Log Out</a></li>
+                    </ul>
+                </li>
+                {% else %}
                 <li class="nav-item">
                     <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#loginModal">Log In</a>
                 </li>
-
+                {% endif %}
             </ul>
 
         </div>
@@ -62,13 +74,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <button type="button" class="btn btn-outline-dark btn-block btn-sm">Log in with Google</button>
-                    <button type="button" class="btn btn-outline-dark btn-block btn-sm">Log in with Email</button>
-                    <button type="button" class="btn btn-outline-dark btn-block btn-sm">Sign up with Email</button>
+                    <a role="button" class="btn btn-outline-dark btn-block btn-sm" href="{% provider_login_url 'google' %}">
+                        <i class="fab fa-google"></i>&nbsp&nbsp Log in with Google</a>
+                    <a role="button" class="btn btn-outline-dark btn-block btn-sm" href="/accounts/login/">
+                        <i class="far fa-envelope"></i>&nbsp&nbsp Log in with Username</a>
+                    <a role="button" class="btn btn-outline-dark btn-block btn-sm" href="/accounts/signup">
+                        <i class="far fa-envelope"></i>&nbsp&nbsp Sign Up with Email</a>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
                 </div>
             </div>
         </div>
