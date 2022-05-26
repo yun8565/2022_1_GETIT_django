@@ -234,12 +234,17 @@ class TestView(TestCase):
         main_area = soup.find('div', id='main_area')
         self.assertIn('Edit Post', main_area.text)
 
+        tag_str_input = main_area.find('input', id='id_tags_str')
+        self.assertTrue(tag_str_input)
+        self.assertIn('자바;자바스크립트', tag_str_input.attrs['value'])
+
         response = self.client.post(
             update_post_url,
             {
                 'title':'세 번째 포스트를 수정함',
                 'content': '하이',
-                'category': self.category_music.pk
+                'category': self.category_music.pk,
+                'tags_str' : '파이썬 공부; 한글 태그, some tag'
             },
             follow=True
         )
@@ -249,3 +254,8 @@ class TestView(TestCase):
         self.assertIn('세 번째 포스트를 수정함', main_area.text)
         self.assertIn('하이', main_area.text)
         self.assertIn(self.category_music.name, main_area.text)
+
+        self.assertIn('파이썬 공부', main_area.text)
+        self.assertIn('한글 태그', main_area.text)
+        self.assertIn('some tag', main_area.text)
+        self.assertNotIn('자바', main_area.text)
